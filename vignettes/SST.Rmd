@@ -1,0 +1,131 @@
+---
+title: "smartDesign SST Tutorial"
+author: "Abe Eyman Casey, Jun He, Jason Sinnwell"
+output:
+  rmarkdown::html_vignette:
+    toc: yes
+    toc_depth: 2
+vignette: |
+  %\VignetteIndexEntry{smartDesign SST Tutorial}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, tidy.opts=list(width.cutoff=80), tidy=TRUE, comment=NA)
+require(smartDesign)
+```
+
+SMART: Single Sequential Treatment (SST)
+========================================
+The purpose of this developing this R package is to quantify and vidualize the misclassification effect on mean/variance of single sequential treatment (SST) and power comparasion of two SSTs in the setting of sequential multiple assigned randomized trial (SMART). 
+
+This vignette describes the use cases of SST for
+the *smart* package. Most of the trial settings and calculations are handled by the *smartSST()* function, where the arguments and settings follow the formula and terminology described in He et al (accepted).  
+
+This R-package was developed based on typical two-stage SMART design, where two initial treatments were denoted as treatment A1 and A2. After making the responder/non-responder designation based on an intermediate outcome, participants are then re-randomized into one of treatments B1 to B8 in treatment stage II. There are then four possible SSTs associated with A1 (A1B1 and A1B2 for responders; A1B3 and A1B4 for non-responders) and four for treatment A2 (A2B5 and A2B6 for responders; A2B7 and A2B8 for non-responders).
+
+We denote the probability of participants being true responders as pG=p(G=1), where G is a binary indicator of the true responder status, and the probability of a participant being classified or observed as a responder as pR=p(R=1), where R is a binary indicator of the observed responder status. We define sensitivity, p(R=1|G=1), as the probability a participant is (correctly) classified as a responder conditional on their true status being a responder, and we define specificity, p(R=0|G=0), as the probability a participant is (correctly) classified as a non-responder conditional on their true status being a non-responder.
+
+The following notation represents expected means and variances of the outcome (Y) at the end of the second stage. The expected mean outcome for responders is mu_BbGgRr=E(Y│B=b,G=g,R=r)  with corresponding variance sigsq_BbGgRr, where B is defined as treatment group in stage II and subscript ‘b’ represents responders (b=s=1,2,5 or 6) or non-responders (b=t=3,4,7 or 8) to initial treatment. The subscript ‘s’ represents responders in stage II to initial treatment, while ‘t’ represents non-responders in stage II to initial treatment. Thus the expected mean outcome and variance for true responders classified as responders are mu_BsG1R1=E(Y│B=s,G=1,R=1) and sigsq_BsG1R1, and the expected mean outcome of true non-responders misclassified and receiving treatment ‘s’ is then mu_BsG0R1= E(Y│B=s,G=0,R=1)  with variance sigsq_BsG0R1. Likewise, mu_BtG0R0=E(Y│B=t,G=0,R=0) represents the expected mean outcome of the true non-responders who were classified correctly (corresponding variance sigsq_BtG0R0), while mu_BtG1R0=E(Y│B=t,G=1,R=0) represents the expected mean outcome of true responders who were misclassified as non-responders (corresponding variance sigsq_BtG1R0). Then mu_Bs=E(Y|B=s) represents the expected mean outcome of the observed subjects receiving treatment ‘s’, with corresponding variance sigsq_Bs. To simplify formula notation, we drop the third subscript R because received treatment (B) already reflects the value of R (e.g., mu_BsG0R0=mu_BsG0). Further, the B and G in the subscripts are dropped (e.g., mu_BsG0=mu_(s,0), where ‘s’ represents responders in stage II to initial treatment, and ‘0’ represents G=0). 
+
+Although SMARTs can be designed for many different types of outcomes, this research considers only continuous outcomes at the end of the study (Stage II outcome).  
+
+SST Calculations
+===================
+
+We run *smartSST* for mean/variance/relative bias of SST of responders (eg. A1B1) and non-responders (eg. A1B3). Two different examples are presented, one for responder and the other for non-responder. The calculations needed for one run of smartSST are for one B-level and the G1,G0 pairing for that B-level. 
+
+In the first example, we run with B-level of 1 (responders), supposing the true responders (B1G1) who were classified to treatment B1 have a better response than true non-responders who were misclassified to treatment B1 (B1G0) with the means of (30, 20) for (G1, G0), respectively, with sample size of 252 and pG_A1 of 0.8. The variance between correctly classified and misclassified participants were assumed same variance of 16. The sensitivity and specificity ranges of 0.5 to 1 are for where the calculations are performed, but the range of sensitivity and specificity is (0,1]. 'pran_Barm' represents the probability that participants are assigned into corresponding Barm. For example, if pran_Barm=0.5, then the probability of being assigned to B1 group is 0.5. We show what is returned in the sst1 object, and the main calculations in the sstdat data.frame within the object. 
+
+Note that even though the formulae of mean/variance of SST didn't contain the number of subject because the nsubject was canceled in the denominator and numerator, we still need to put any number that is >10 to generate the dummy variable which are used in the R program. However, the different nsubject will not change the results of the mean/variance calculation (need to double check whether it is true).   
+
+```{r, smartSST}
+sst1 <- smartSST(mu_Barm=c(G1=30, G0=20), sigsq_Barm=c(G1=16,G0=16),
+        Barm=1, sens=seq(.5, 1, by=.1),  spec=seq(.5, 1, by=.1),
+        nsubject=252, pG_A1=0.8, pran_A1 = 0.5, pran_Barm = 0.5)
+names(sst1$sstdat)
+sst1
+```
+
+In the second example, we do similar calculations for non-responders (B-level of 3), but the formulae of mean/variances for responders and non-responders are different. We assumed that the true non-responders who were correctly classified to treatment B3 (B3G0) had worse treatment response than the true responders who were misclassfied to B3 (B3G1), with the means of (25, 20) for (G1, G0), respectively. Otherwise, the same settings as above.
+```{r, sst3}
+sst3 <- smartSST(mu_Barm=c(G1=25, G0=20), sigsq_Barm=c(G1=16,G0=16), Barm=3, sens=seq(.5, 1, by=.1), nsubject=252, spec=seq(.5, 1, by=.1), pG_A1=0.8)
+print(sst3, digits=3)
+```
+
+## SST Plots
+This is an example of plotting the mean of B1 from the first example for responders. Metric allows us to choose either "mean" or "variance"; xtype represents two choices in x-axis, specificity "spec" or sensitivity "sens". When sens=spec=1, it represents the case without misclassification. "mar=c(4,4,4,6)" represents how much margins the figure left to the border (bottom, left, top, right). "legend.inset" represents the location of legend (horizontal, vertical). "cex.lab" represents the axis label size, "cex.axis" represents the axis annotation size. When "relativeBias=FALSE" (default), the plot shows raw data, which is the expected mean in this case. When "relativeBias=TRUE", the plot shows relative bias, which is the relative bias of mean in this case. The function plot or plot.smartSST will show same results here.  
+
+```{r, b1means}
+#plot(sst1, metric="mean", xtype="spec",cex.lab=1.5, cex.axis=1.2, 
+#     mar=c(5,5,2,9), legend.inset=c(-0.45,0.1))
+plot.smartSST(sst1, metric="mean", xtype="spec", cex.lab=1.5, cex.axis=1.2, 
+     mar=c(5,5,2,9), legend.inset=c(-0.45,0.1), relativeBias=FALSE)
+
+
+```
+
+This is an example of plotting the variance of B1 from the first example for responders.
+
+```{r, b1variance}
+plot.smartSST(sst1, metric="variance", xtype="spec", cex.lab=1.5, cex.axis=1.2, 
+     mar=c(5,5,2,9), legend.inset=c(-0.45,0.1))
+```
+
+This is an example of plotting the mean of B3 from the first example for non-responders.
+
+```{r, b3meanplots}
+plot.smartSST(sst3, metric="mean", xtype="spec", ylim=c(-30,10),
+mar=c(4,4,4,6), relativeBias=TRUE)
+```
+
+This is an example of plotting the variance of B3 from the first example for non-responders.
+
+```{r, b3varplots}
+plot.smartSST(sst3, metric="variance", xtype="sens",
+  mar=c(4,4,4,6), cex.axis=.5,  cex.lab=.5)
+```
+
+
+## Relative Bias plots, separate for relative mean and relative variance (sigsq)
+
+This is an example of plotting the relative mean and relative variance.
+
+```{r, b1bias}
+plot.smartSST(sst3, metric="mean", xtype="sens", cex.axis=.5,cex.lab=.5, mar=c(4,4,4,6), relativeBias=TRUE)
+```
+
+SST Power
+===============================
+
+To evaluate the power comparison between two groups (eg.B1 versus B2, B3 versus B4), the calculated results from sst1 and sst2 are required. We will use two examples to show the misclassification effects on power based on targeted power of 0.8. 
+
+The first example shows the power of comparison between responders (B1 vs. B2) with the condition that N=316, effect size=0.5 for true responders, and bigger effect size for true non-responders misclassified to responder group (0.9).
+
+```{r, powerspec}
+## need to add warnigns that power does not work if sens/spec are different
+sst1 <- smartSST(mu_Barm=c(G1=30, G0=20), sigsq_Barm=c(G1=100,G0=100), Barm=1, sens=seq(.5, 1, by=.1), nsubject=316, spec=seq(.5, 1, by=.1), pG_A1=0.8)
+sst2 <- smartSST(mu_Barm=c(G1=25, G0=11), sigsq_Barm=c(G1=100,G0=100), Barm=2, sens=seq(.5, 1, by=.1), nsubject=316, spec=seq(.5, 1, by=.1), pG_A1=0.8)
+
+powsst1vs2 <- powerSST(sst1, sst2, alpha=0.05)
+## access the full power data.frame/matrix
+powsst1vs2$powerdat ## same as: print.powerSST(powsst1vs2)
+plot.powerSST(powsst1vs2, xtype="sens", hline=0.8, ylim=c(0,1), mar=c(4,4,4,6), cex.axis=.5, cex.lab=.5) 
+plot.powerSST(powsst1vs2, xtype="sens", alpha=0.10, ylim=c(.5, 1), hline=.9, mar=c(4,4,4,6), cex.axis=.5,cex.lab=.5)
+```
+
+The second example shows the power of comparison between non-responders (B3 vs. B4) with the condition that has N=1256, the effect size=0.5 for non-responders, and same effect size for SST true responders misclassified to non-responder group (0.5).
+
+```{r, powerspec2}
+## need to add warnigns that power does not work if sens/spec are different
+sst3 <- smartSST(mu_Barm=c(G1=35, G0=28), sigsq_Barm=c(G1=100,G0=100), Barm=3, sens=seq(.5, 1, by=.1), nsubject=1256, spec=seq(.5, 1, by=.1), pG_A1=0.8)
+sst4 <- smartSST(mu_Barm=c(G1=30, G0=23), sigsq_Barm=c(G1=100,G0=100), Barm=4, sens=seq(.5, 1, by=.1), nsubject=1256, spec=seq(.5, 1, by=.1), pG_A1=0.8)
+
+powsst3vs4 <- powerSST(sst3, sst4, alpha=0.05)
+## access the full power data.frame/matrix
+powsst3vs4$powerdat ## same as: print.powerSST(powsst3vs4)
+plot.powerSST(powsst3vs4, xtype="sens", hline=0.8, ylim=c(0,1), cex.axis=.5, cex.lab=.5, mar=c(4,4,4,6), legend.inset=c(-.2,0))
+```
