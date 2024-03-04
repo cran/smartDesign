@@ -50,8 +50,8 @@ plot.powerSST <- function(x, xtype="spec",  metric=c("power", "zstat"),
     ## JPS 2/28/21 items to fix up
     ## lty and col better then 1:10
     ## xlab and ylab allow user to pass, must pull off from dots
-    usrpar <- par()
-    on.exit(par(usrpar))
+    ##    usrpar <- par()
+    ##    on.exit(par(usrpar))
   
     sensuniq <- unique(x$powerdat$sens)
     specuniq <- unique(x$powerdat$spec)

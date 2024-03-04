@@ -55,8 +55,8 @@ plot.smartSST <- function(x, xtype = "spec", metric="mean", ylim=NULL, ylab=NULL
       legend.col <- legend.lty <- 1:length(usens)
   }
   
-  usrpar <- par()
-  on.exit(par(usrpar))
+  #usrpar <- par()
+  #on.exit(par(usrpar))
   
   if(metric == "mean" & relativeBias == FALSE) {  
     title = "Expected mean of "

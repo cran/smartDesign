@@ -54,8 +54,8 @@ plot.powerDTR <- function(x, xtype="spec", metric="power", legend.inset=c(-.3, 0
                           mar=c(5.1, 4.1, 4.1, 8.1), ylim=NULL, hline=0.8,
                           cex.axis=1.0, cex.lab=1.0, alpha=NULL, ...) {
 
-    usrpar <- par()
-    on.exit(par(usrpar))
+##    usrpar <- par()
+##    on.exit(par(usrpar))
    
     sensuniq <- sort(unique(x$powerdat$sens), decreasing=FALSE)
     specuniq <- sort(unique(x$powerdat$spec), decreasing=FALSE)

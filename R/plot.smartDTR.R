@@ -18,8 +18,8 @@ plot.smartDTR <- function(x, xtype="sens", metric="mean",
     if(metric != "mean" & metric != "variance") {
         stop("Please enter valid metric (mean, variance): ", metric)
     }
-    usrpar <- par()
-    on.exit(par(usrpar))
+    ##   usrpar <- par()
+    ##   on.exit(par(usrpar))
     
     ## ticks for legend, so if xtype is sens, then legend is spec
     if(xtype == "sens") {

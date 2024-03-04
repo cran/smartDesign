@@ -1,20 +1,20 @@
 ---
-title: "smartDesign DTR Tutorial"
+title: "DTR_Tutorial"
 author: "Jun He, Jason Sinnwell"
 output:
   rmarkdown::html_vignette:
     toc: yes
     toc_depth: 2
 vignette: |
-  %\VignetteIndexEntry{smartDesign DTR Tutorial}
+  %\VignetteIndexEntry{DTR_Tutorial}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 ---
 
 
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, tidy.opts=list(width.cutoff=80), tidy=TRUE, comment=NA)
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, tidy.opts=list(width.cutoff=80), comment=NA)
 require(smartDesign)
 ```
 
